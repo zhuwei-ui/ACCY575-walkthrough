@@ -8,3 +8,28 @@ wheels/
 
 # Virtual environments
 .venv
+.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Secrets
+.env
+.env.*
+
+# Data — keep raw/interim pulls and bulk data files out of Git, but not test fixtures
+data/raw/
+data/interim/
+data/*.csv
+data/*.parquet
+data/*.xlsx
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/settings.json
+.idea/
