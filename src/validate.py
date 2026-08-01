@@ -12,20 +12,6 @@ import pandas as pd
 import pandera.pandas as pa
 from pandera.typing import Series
 
-# The dictionary declares these TEXT, but pandas infers int64/float64 and
-# strips leading zeros on read. Passing this map to read_csv keeps them intact
-# ("Presented as text, because some numbers begin with 0" -- dictionary).
-DTYPES = {
-    "auditee_zip": str,
-    "auditor_zip": str,
-    "auditee_ein": str,
-    "auditor_ein": str,
-    "auditee_phone": str,
-    "auditor_phone": str,
-    "cognizant_agency": str,
-    "oversight_agency": str,
-}
-
 ZIP_PATTERN = r"^[0-9]{5}(?:[0-9]{4})?$"
 
 # `GSA_MIGRATION` is a documented sentinel, not corruption: it marks records
@@ -41,11 +27,6 @@ OPINIONS = {
     "disclaimer_of_opinion",
     "GSA_MIGRATION",
 }
-
-
-def load_general(path) -> pd.DataFrame:
-    """Read the extract with identifier columns kept as text."""
-    return pd.read_csv(path, dtype=DTYPES, low_memory=False)
 
 
 def _opinions_are_known(series: pd.Series) -> pd.Series:
@@ -157,11 +138,6 @@ def validate(df: pd.DataFrame) -> pd.DataFrame:
     return GeneralSchema.validate(df, lazy=True)
 
 
-if __name__ == "__main__":
-    frame = load_general("data/general_2016_2018.csv")
-    try:
-        validate(frame)
-        print(f"OK -- {len(frame):,} rows conform to GeneralSchema")
-    except pa.errors.SchemaErrors as exc:
-        print(f"FAILED -- {len(exc.failure_cases):,} failure cases")
-        print(exc.failure_cases.groupby(["column", "check"]).size().to_string())
+def describe_failures(exc: pa.errors.SchemaErrors) -> str:
+    """Group failure cases by column and check for a readable summary."""
+    return exc.failure_cases.groupby(["column", "check"]).size().to_string()
