@@ -31,6 +31,21 @@ def monthly_variance(df, column="amount"):
     )
 
 
+def monthly_totals_by_category(df: pd.DataFrame) -> pd.DataFrame:
+    """Total `amount` per month-end and category, one column per category.
+
+    Expects `date` to be datetime64. The index spans every month between the
+    first and last transaction, so a category with no activity in a month is 0.
+    """
+    return (
+        df.groupby([pd.Grouper(key="date", freq="ME"), "category"])["amount"]
+          .sum()
+          .unstack("category")
+          .fillna(0.0)
+          .rename_axis(index="month", columns=None)
+    )
+
+
 if __name__ == "__main__":
     api_key = get_api_key()
     print(f"loaded a key of length {len(api_key)}")
